@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hp.mapper.UserMapper">
+	<select id="finfUserByqq" resultMap="selectUser">
+		select * from userbean where qq=#{qq}
+	</select>
+	<resultMap type="com.hp.bean.UserBean" id="selectUser">
+		<id column="userid" property="userid" />
+		<result column="qq" property="qq" />
+		<result column="username" property="username" />
+		<result column="password" property="password" />
+		<result column="headpic" property="headpic" />
+		<result column="sex" property="sex" />
+		<result column="birthday" property="birthday" />
+		<result column="nowaddress" property="nowaddress" />
+		<result column="hometown" property="hometown" />
+		<result column="ismarry" property="ismarry" />
+		<result column="state" property="state" />
+		<result column="lastvisit" property="lastvisit" />
+	</resultMap>
+	<update id="updateUser" parameterType="com.hp.bean.UserBean">
+		update userbean set
+		lastvisit=#{lastvisit} where userid=#{userid}
+	</update>
+	<!-- 删除留言 -->
+	<delete id="delMess" parameterType="com.hp.bean.Message">
+		delete from message where messageid=#{messageid}
+	</delete>
+	<!-- 添加留言 -->
+	<insert id="addMess" parameterType="com.hp.bean.Message">
+		insert into
+		message(messageid,receiveid,senderid,messagetime,content,parentmessageid,pic)
+		value(#{messageid},#{receiveid},#{senderid},#{messagetime},#{content},#{parentmessageid},#{pic})
+	</insert>
+	<!-- 查找留言 自己的留言 -->
+	<select id="messagelist" resultMap="messresultMap">
+		select * from message m left join userBean u on m.receiveid=u.userid where
+		u.userid=#{userid} order by m.messagetime desc
+	</select>
+	<resultMap id="messresultMap" type="com.hp.bean.Message">
+		<id property="messageid" column="messageid" />
+		<result property="receiveid" column="user" />
+		<result property="senderid" column="senderid" />
+		<result property="messagetime" column="messagetime" />
+		<result property="content" column="content" />
+		<result property="parentmessageid" column="parentmessageid" />
+		<result property="pic" column="pic" />
+		<collection property="user" ofType="com.hp.bean.UserBean">
+			<id property="userid" column="userid" />
+			<result column="qq" property="qq" />
+			<result column="username" property="username" />
+			<result column="password" property="password" />
+			<result column="headpic" property="headpic" />
+			<result column="sex" property="sex" />
+			<result column="birthday" property="birthday" />
+			<result column="nowaddress" property="nowaddress" />
+			<result column="hometown" property="hometown" />
+			<result column="ismarry" property="ismarry" />
+			<result column="state" property="state" />
+			<result column="lastvisit" property="lastvisit" />
+		</collection>
+	</resultMap>
+	<!-- 查找说说 三表联查 查找自己及好友的说说 -->
+	<select id="feelcount"  resultType="int" >
+		select count(*) from feel as f join friendmap as m join userBean as u on
+		f.userid=m.friendid and m.friendid=u.userid where m.userid=#{userid}
+		or f.userid=#{userid} order by f.feeltime desc
+	</select>
+	<select id="feellist" resultMap="userresultMap">
+		select f.*,u.username from feel as f join friendmap as m join userBean as u
+		on f.userid=m.friendid and m.friendid=u.userid where
+		m.userid=#{userid} or f.userid=#{userid} order by f.feeltime desc
+		limit #{start},#{size}
+	</select>
+	<resultMap id="userresultMap" type="com.hp.bean.Feel">
+		<id property="feelid" column="feelid" />
+		<result property="feeltime" column="feeltime" />
+		<result property="feelcontent" column="feelcontent" />
+		<result property="pic" column="pic" />
+		<result property="userid" column="user" />
+		<collection property="user" ofType="com.hp.bean.UserBean">
+			<id property="userid" column="userid" />
+			<result column="qq" property="qq" />
+			<result column="username" property="username" />
+			<result column="password" property="password" />
+			<result column="headpic" property="headpic" />
+			<result column="sex" property="sex" />
+			<result column="birthday" property="birthday" />
+			<result column="nowaddress" property="nowaddress" />
+			<result column="hometown" property="hometown" />
+			<result column="ismarry" property="ismarry" />
+			<result column="state" property="state" />
+			<result column="lastvisit" property="lastvisit" />
+		</collection>
+	</resultMap>
+	<!-- 添加说说 -->
+	<insert id="addFeel" parameterType="com.hp.bean.Feel">
+		insert into feel(feelid,userid,feeltime,feelcontent,pic)
+		value(#{feelid},#{user.userid},#{feeltime},#{feelcontent},#{pic})
+	</insert>
+	<!-- 删除说说 -->
+	<delete id="delFeel" parameterType="com.hp.bean.Feel">
+		delete from feel where feelid=#{feelid} and userid=#{user.userid}
+	</delete>
+	<!-- 注册用户 -->
+	<insert id="regUser" parameterType="com.hp.bean.UserBean">
+		insert into
+		userBean(userid,qq,username,password,headpic,sex,birthday,nowaddress,hometown,ismarry,state,lastvisit)
+		value(#{userid},#{qq},#{username},#{password},#{headpic},#{sex},#{birthday},#{nowaddress},#{hometown},#{ismarry},#{state},#{lastvisit})
+	</insert>
+</mapper>
